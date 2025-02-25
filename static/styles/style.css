@@ -3,6 +3,17 @@ body {
 
 }
 
+#canvas-container {
+    display: flex;
+    justify-content: center;
+
+}
+#button-container{
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
 #my-canvas {
     background-color: white;
 
