@@ -4,6 +4,7 @@ window.addEventListener('load', function () {
     let ctx = c.getContext('2d');
     let curColor = cPicker.value;
     let objs = [];
+    let ps = [];
     let mode = 'none';
     let isDrawing = false;
     let startX, startY, previewX, previewY;
@@ -24,23 +25,25 @@ window.addEventListener('load', function () {
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     }
-    // class Triangle {
-    //     constructor(x = 0, y = 0, width = 50, height = 50, color = curColor) {
-    //         this.x = x;
-    //         this.y = y;
-    //         this.width = width;
-    //         this.height = height;
-    //         this.color = color;
-    //     }
-    //     draw() {
-    //         this.bigint = parseInt(this.color.slice(1), 16);
-    //         this.r = (this.bigint >> 16) & 255;
-    //         this.g = (this.bigint >> 8) & 255;
-    //         this.b = this.bigint & 255;
-    //         ctx.fillStyle = `rgb(${this.r}, ${this.g}, ${this.b})`;
-    //         ctx.fillRect(this.x, this.y, this.width, this.height);
-    //     }
-    // }
+    class Triangle {
+        constructor(ps, color=curColor) { // ps is a list of tuples of (x,y) coordinates
+            this.ps = ps;
+            this.color = color;
+        }
+        draw() {
+            this.bigint = parseInt(this.color.slice(1), 16);
+            this.r = (this.bigint >> 16) & 255;
+            this.g = (this.bigint >> 8) & 255;
+            this.b = this.bigint & 255;
+            ctx.fillStyle = `rgb(${this.r}, ${this.g}, ${this.b})`;
+            ctx.beginPath();
+            ctx.moveTo(this.ps[0][0],this.ps[0][1]);
+            ctx.lineTo(this.ps[1][0],this.ps[1][1]);
+            ctx.lineTo(this.ps[2][0],this.ps[2][1]);
+            ctx.closePath();
+            ctx.fill();
+        }
+    }
     // class Circle {
     //     constructor(x = 0, y = 0, width = 50, height = 50, color = curColor) {
     //         this.x = x;
@@ -84,6 +87,22 @@ window.addEventListener('load', function () {
             }
 
         } else if (mode === 'tri') {
+            if (ps.length < 2){
+                startX = e.offsetX;
+                startY = e.offsetY;
+                ps.push([startX,startY]);
+                console.log(`adding ${ps}`)
+            } else {
+                startX = e.offsetX;
+                startY = e.offsetY;
+                ps.push([startX,startY]);
+                console.log(`Done ${ps}`)
+                let curTri = new Triangle(ps,curColor);
+                curTri.draw();
+                objs.push(curTri);
+                ps=[];
+            }
+            
         } else if (mode === 'circ') {
         } else {
 
