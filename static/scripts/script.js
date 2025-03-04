@@ -26,7 +26,7 @@ window.addEventListener('load', function () {
         }
     }
     class Triangle {
-        constructor(ps, color=curColor) { // ps is a list of tuples of (x,y) coordinates
+        constructor(ps, color = curColor) { // ps is a list of tuples of (x,y) coordinates
             this.ps = ps;
             this.color = color;
         }
@@ -37,9 +37,9 @@ window.addEventListener('load', function () {
             this.b = this.bigint & 255;
             ctx.fillStyle = `rgb(${this.r}, ${this.g}, ${this.b})`;
             ctx.beginPath();
-            ctx.moveTo(this.ps[0][0],this.ps[0][1]);
-            ctx.lineTo(this.ps[1][0],this.ps[1][1]);
-            ctx.lineTo(this.ps[2][0],this.ps[2][1]);
+            ctx.moveTo(this.ps[0][0], this.ps[0][1]);
+            ctx.lineTo(this.ps[1][0], this.ps[1][1]);
+            ctx.lineTo(this.ps[2][0], this.ps[2][1]);
             ctx.closePath();
             ctx.fill();
         }
@@ -87,22 +87,28 @@ window.addEventListener('load', function () {
             }
 
         } else if (mode === 'tri') {
-            if (ps.length < 2){
+            if (ps.length < 2) {
+                isDrawing = true;
                 startX = e.offsetX;
                 startY = e.offsetY;
-                ps.push([startX,startY]);
+                ps.push([startX, startY]);
                 console.log(`adding ${ps}`)
             } else {
+                isDrawing = false;
+                ctx.clearRect(0, 0, c.width, c.height);
+                objs.forEach(element => {
+                    element.draw();
+                });
                 startX = e.offsetX;
                 startY = e.offsetY;
-                ps.push([startX,startY]);
+                ps.push([startX, startY]);
                 console.log(`Done ${ps}`)
-                let curTri = new Triangle(ps,curColor);
+                let curTri = new Triangle(ps, curColor);
                 curTri.draw();
                 objs.push(curTri);
-                ps=[];
+                ps = [];
             }
-            
+
         } else if (mode === 'circ') {
         } else {
 
@@ -121,8 +127,34 @@ window.addEventListener('load', function () {
                 });
                 curRect.draw();
             }
-        
         } else if (mode === 'tri') {
+            if (isDrawing) {
+                let last = ps.length - 1;
+                previewX = e.offsetX;
+                previewY = e.offsetY;
+                // we have last elemnt stored, ps[-1] we make line from there to mouse
+                ctx.clearRect(0, 0, c.width, c.height);
+                objs.forEach(element => {
+                    element.draw();
+                });
+                ctx.beginPath();
+                let bigint = parseInt(curColor.slice(1), 16);
+                let r = (bigint >> 16) & 255;
+                let g = (bigint >> 8) & 255;
+                let b = (bigint & 255);
+                ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`;
+                for (let i = 0; i <= last; i++) {
+                    if (i > 0) {
+                        ctx.moveTo(ps[0][0], ps[0][1]);
+                        ctx.lineTo(ps[1][0], ps[1][1]);
+                    }
+                    ctx.moveTo(ps[i][0], ps[i][1]);
+                    ctx.lineTo(previewX, previewY);
+                    ctx.stroke();
+                }
+
+
+            }
         } else if (mode === 'circ') {
         } else {
 
@@ -135,6 +167,7 @@ window.addEventListener('load', function () {
         });
     document.getElementById('triangle-button')
         .addEventListener('click', function () {
+            ps = [];
             mode = 'tri';
         });
     document.getElementById('circle-button')
@@ -144,6 +177,7 @@ window.addEventListener('load', function () {
 
     document.getElementById('undo-button')
         .addEventListener('click', function () {
+            ps = [];
             objs.pop();
             ctx.clearRect(0, 0, c.width, c.height);
             objs.forEach(element => {
