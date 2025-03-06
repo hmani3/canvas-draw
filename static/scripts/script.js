@@ -163,10 +163,8 @@ window.addEventListener('load', function () {
             }
         } else if (mode === 'tri') {
             if (isDrawing) {
-                let last = ps.length - 1;
                 previewX = e.offsetX;
                 previewY = e.offsetY;
-                // we have last elemnt stored, ps[-1] we make line from there to mouse
                 ctx.clearRect(0, 0, c.width, c.height);
                 objs.forEach(element => {
                     element.draw();
@@ -177,7 +175,7 @@ window.addEventListener('load', function () {
                 let g = (bigint >> 8) & 255;
                 let b = (bigint & 255);
                 ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`;
-                for (let i = 0; i <= last; i++) {
+                for (let i = 0; i < ps.length; i++) {
                     if (i > 0) {
                         ctx.moveTo(ps[0][0], ps[0][1]);
                         ctx.lineTo(ps[1][0], ps[1][1]);
