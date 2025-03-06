@@ -3,16 +3,17 @@ window.addEventListener('load', function () {
     const cPicker = document.getElementById('color-picker');
     let ctx = c.getContext('2d');
     let curColor = cPicker.value;
-    let objs = [];
     let ps = [];
+    let objs = [];
     let mode = 'none';
     let isDrawing = false;
     let startX, startY, previewX, previewY;
+
     class Rectangle {
         constructor(x = 0, y = 0, width = 50, height = 50, color = curColor) {
             this.x = x;
             this.y = y;
-            this.width = width;
+            this.width = width
             this.height = height;
             this.color = color;
         }
@@ -26,7 +27,7 @@ window.addEventListener('load', function () {
         }
     }
     class Triangle {
-        constructor(ps, color = curColor) { // ps is a list of tuples of (x,y) coordinates
+        constructor(ps, color = curColor) { // ps is a list of lists of (x,y) coordinates
             this.ps = ps;
             this.color = color;
         }
@@ -44,29 +45,51 @@ window.addEventListener('load', function () {
             ctx.fill();
         }
     }
-    // class Circle {
-    //     constructor(x = 0, y = 0, width = 50, height = 50, color = curColor) {
-    //         this.x = x;
-    //         this.y = y;
-    //         this.width = width;
-    //         this.height = height;
-    //         this.bigint = parseInt(color.slice(1), 16);
-    //         this.r = (this.bigint >> 16) & 255;
-    //         this.g = (this.bigint >> 8) & 255;
-    //         this.b = this.bigint & 255;
-    //         this.color = `rgb(${this.r}, ${this.g}, ${this.b})`;
-    //     }
-    //     draw() {
-    //         ctx.fillStyle = color;
-    //         ctx.fillRect(this.x, this.y, this.width, this.height);
-    //     }
-    //     drawPreview(){
-    //         ctx.setLineDash([5, 5]); // Dashed line for preview
-    //         ctx.strokeStyle = "black"
-    //         ctx.fillRect(this.x, this.y, this.width, this.height)
-    //     }
-    // }
+    class Circle {
+        constructor(x = 10, y = 10, radiusX = 10, radiusY = 10, color = curColor) {
+            this.radiusX = radiusX;
+            this.radiusY = radiusY;
+            this.x = x;
+            this.y = y;
+            this.color = color;
+        }
+        draw() {
+            this.bigint = parseInt(this.color.slice(1), 16);
+            this.r = (this.bigint >> 16) & 255;
+            this.g = (this.bigint >> 8) & 255;
+            this.b = this.bigint & 255;
+            ctx.fillStyle = `rgb(${this.r}, ${this.g}, ${this.b})`;
+            ctx.beginPath();
+            ctx.ellipse(this.x, this.y, this.radiusX, this.radiusY, 0, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+    }
 
+    function loadIn() {
+        let storedD = localStorage.getItem('shapes-drawn');
+        let parsedObjs = storedD ? JSON.parse(storedD) : [];
+
+        // Convert plain objects back to class instances
+        objs = parsedObjs.map(obj => {
+            if (obj.hasOwnProperty('ps')) {
+                // It's a Triangle
+                return new Triangle(obj.ps, obj.color);
+            } else if (obj.hasOwnProperty('radiusX')) {
+                // It's a Circle
+                return new Circle(obj.x, obj.y, obj.radiusX, obj.radiusY, obj.color);
+            } else {
+                // It's a Rectangle
+                return new Rectangle(obj.x, obj.y, obj.width, obj.height, obj.color);
+            }
+        });
+        console.log(objs);
+
+        // Draw the loaded objects
+        objs.forEach(element => {
+            element.draw();
+        });
+    }
+    loadIn();
 
     cPicker.addEventListener('change', function () {
         curColor = cPicker.value;
@@ -95,14 +118,13 @@ window.addEventListener('load', function () {
                 console.log(`adding ${ps}`)
             } else {
                 isDrawing = false;
-                ctx.clearRect(0, 0, c.width, c.height);
+                ctx.clearRect(0, 0, c.width, c.height); // clear outline of preview
                 objs.forEach(element => {
                     element.draw();
                 });
                 startX = e.offsetX;
                 startY = e.offsetY;
                 ps.push([startX, startY]);
-                console.log(`Done ${ps}`)
                 let curTri = new Triangle(ps, curColor);
                 curTri.draw();
                 objs.push(curTri);
@@ -110,7 +132,19 @@ window.addEventListener('load', function () {
             }
 
         } else if (mode === 'circ') {
-        } else {
+            if (!isDrawing) {
+                isDrawing = true;
+                startX = e.offsetX;
+                startY = e.offsetY;
+            }
+            else {
+                isDrawing = false;
+                let rX = (startX - previewX) > 0 ? startX - previewX : -(startX - previewX)
+                let rY = (startY - previewY) > 0 ? startY - previewY : -(startY - previewY)
+                let curCirc = new Circle(startX + rX, startY, rX, rY, curColor);
+                curCirc.draw();
+                objs.push(curCirc);
+            }
 
         }
     });
@@ -156,8 +190,18 @@ window.addEventListener('load', function () {
 
             }
         } else if (mode === 'circ') {
-        } else {
-
+            if (isDrawing) {
+                previewX = e.offsetX;
+                previewY = e.offsetY;
+                let rX = (startX - previewX) > 0 ? startX - previewX : -(startX - previewX)
+                let rY = (startY - previewY) > 0 ? startY - previewY : -(startY - previewY)
+                let curCirc = new Circle(startX + rX, startY, rX, rY, curColor);
+                ctx.clearRect(0, 0, c.width, c.height);
+                objs.forEach(element => {
+                    element.draw();
+                });
+                curCirc.draw();
+            }
         }
     })
 
@@ -190,5 +234,9 @@ window.addEventListener('load', function () {
             objs = [];
             mode = 'none';
         });
+    window.addEventListener('beforeunload', function () {
+        localStorage.setItem('shapes-drawn', JSON.stringify(objs));
+    });
 
 });
+
