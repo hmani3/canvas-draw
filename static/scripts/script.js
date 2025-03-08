@@ -1,3 +1,6 @@
+// Heeman Ijaz, Jason Xie
+// Canvas Assignment
+// 3/4/2025
 window.addEventListener('load', function () {
     const c = document.getElementById('my-canvas');
     const cPicker = document.getElementById('color-picker');
@@ -137,7 +140,7 @@ window.addEventListener('load', function () {
             }
             else {
                 isDrawing = false;
-                let rX = Math.abs(startX - previewX) 
+                let rX = Math.abs(startX - previewX)
                 let rY = Math.abs(startY - previewY)
                 let curCirc = new Circle(startX + rX, startY, rX, rY, curColor);
                 curCirc.draw();
@@ -189,8 +192,8 @@ window.addEventListener('load', function () {
             if (isDrawing) {
                 previewX = e.offsetX;
                 previewY = e.offsetY;
-                let rX = Math.abs(startX - previewX) 
-                let rY = Math.abs(startY - previewY) 
+                let rX = Math.abs(startX - previewX)
+                let rY = Math.abs(startY - previewY)
                 let curCirc = new Circle(startX + rX, startY, rX, rY, curColor);
                 ctx.clearRect(0, 0, c.width, c.height);
                 objs.forEach(element => {
@@ -217,7 +220,7 @@ window.addEventListener('load', function () {
             mode = 'circ';
             setActiveButton('circle-button');
         });
-    
+
     // Helper function to manage active button state
     function setActiveButton(activeId) {
         // Remove active class from all buttons
