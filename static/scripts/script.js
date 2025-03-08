@@ -8,7 +8,7 @@ window.addEventListener('load', function () {
     let mode = 'none';
     let isDrawing = false;
     let startX, startY, previewX, previewY;
-
+    setActiveButton('active-holder');
     class Rectangle {
         constructor(x = 0, y = 0, width = 50, height = 50, color = curColor) {
             this.x = x;
@@ -82,7 +82,6 @@ window.addEventListener('load', function () {
                 return new Rectangle(obj.x, obj.y, obj.width, obj.height, obj.color);
             }
         });
-        console.log(objs);
 
         // Draw the loaded objects
         objs.forEach(element => {
@@ -115,7 +114,6 @@ window.addEventListener('load', function () {
                 startX = e.offsetX;
                 startY = e.offsetY;
                 ps.push([startX, startY]);
-                console.log(`adding ${ps}`)
             } else {
                 isDrawing = false;
                 ctx.clearRect(0, 0, c.width, c.height); // clear outline of preview
@@ -139,8 +137,8 @@ window.addEventListener('load', function () {
             }
             else {
                 isDrawing = false;
-                let rX = (startX - previewX) > 0 ? startX - previewX : -(startX - previewX)
-                let rY = (startY - previewY) > 0 ? startY - previewY : -(startY - previewY)
+                let rX = Math.abs(startX - previewX) 
+                let rY = Math.abs(startY - previewY)
                 let curCirc = new Circle(startX + rX, startY, rX, rY, curColor);
                 curCirc.draw();
                 objs.push(curCirc);
@@ -191,8 +189,8 @@ window.addEventListener('load', function () {
             if (isDrawing) {
                 previewX = e.offsetX;
                 previewY = e.offsetY;
-                let rX = (startX - previewX) > 0 ? startX - previewX : -(startX - previewX)
-                let rY = (startY - previewY) > 0 ? startY - previewY : -(startY - previewY)
+                let rX = Math.abs(startX - previewX) 
+                let rY = Math.abs(startY - previewY) 
                 let curCirc = new Circle(startX + rX, startY, rX, rY, curColor);
                 ctx.clearRect(0, 0, c.width, c.height);
                 objs.forEach(element => {
@@ -206,16 +204,29 @@ window.addEventListener('load', function () {
     document.getElementById('rectangle-button')
         .addEventListener('click', function () {
             mode = 'rect';
+            setActiveButton('rectangle-button');
         });
     document.getElementById('triangle-button')
         .addEventListener('click', function () {
             ps = [];
             mode = 'tri';
+            setActiveButton('triangle-button');
         });
     document.getElementById('circle-button')
         .addEventListener('click', function () {
             mode = 'circ';
+            setActiveButton('circle-button');
         });
+    
+    // Helper function to manage active button state
+    function setActiveButton(activeId) {
+        // Remove active class from all buttons
+        ['rectangle-button', 'triangle-button', 'circle-button'].forEach(id => {
+            document.getElementById(id).classList.remove('active');
+        });
+        // Add active class to current button
+        document.getElementById(activeId).classList.add('active');
+    }
 
     document.getElementById('undo-button')
         .addEventListener('click', function () {
@@ -228,6 +239,7 @@ window.addEventListener('load', function () {
         });
     document.getElementById('clear-button')
         .addEventListener('click', function () {
+            setActiveButton('active-holder');
             ctx.clearRect(0, 0, c.width, c.height);
             objs = [];
             mode = 'none';
